@@ -266,10 +266,11 @@ where
     sqlx::query(
         "SELECT version, event
          FROM event
-         WHERE entity_id = $1
+         WHERE entity_id = $1 AND type_name = $2
          ORDER BY seq_no ASC",
     )
     .bind(id)
+    .bind(E::TYPE_NAME)
     .fetch(&**pool)
     .map_err(|error| Error::Sqlx("cannot get next event".to_string(), error))
     .map(|row| {
@@ -306,9 +307,10 @@ where
     let version = sqlx::query(
         "SELECT MAX(version)
          FROM event
-         WHERE entity_id = $1",
+         WHERE entity_id = $1 AND type_name = $2",
     )
     .bind(id)
+    .bind(E::TYPE_NAME)
     .fetch_one(&mut *tx)
     .await
     .map_err(|error| Error::Sqlx("cannot select max version".to_string(), error))
